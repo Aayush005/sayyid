@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khilji Dynasty MCQ Quiz</title>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f8ff, #e6f7ff);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Accommodate fixed elements */
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Timer Styling */
+        .timer {
+            position: fixed;          /* Fixes the position relative to the viewport */
+            top: 20px;                /* Positions 20px from the top */
+            right: 20px;              /* Positions 20px from the right */
+            font-size: 1.5rem;        /* Sets a readable font size */
+            color: #d9534f;           /* Sets the text color (red) */
+            font-weight: bold;        /* Makes the text bold */
+            z-index: 1000;            /* Ensures the timer stays above other elements */
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+            padding: 10px 15px;       /* Adds padding around the timer text */
+            border-radius: 5px;       /* Rounds the corners of the timer box */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Adds a subtle shadow for depth */
+        }
+
+        /* Question Map Sidebar Styling */
+        .question-map {
+            position: fixed;          
+            top: 80px;                /* Positioned below the timer */
+            right: 20px;               /* Positioned on the right */
+            width: 180px;              /* Increased width to accommodate 5 columns */
+            background-color: rgba(255, 255, 255, 0.9); 
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 999;             
+            max-height: 90vh;         
+            overflow-y: auto;         
+        }
+
+        .question-map h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            color: #007bff;
+        }
+
+        /* Update #questionLinks to Use CSS Grid */
+        #questionLinks {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 5px; /* Adjust the spacing between links as needed */
+            justify-items: center; /* Centers the links within each grid cell */
+        }
+
+        /* Adjust .question-map .question-link Styling */
+        .question-map .question-link {
+            padding: 5px 0; /* Reduces vertical padding */
+            font-size: 0.9rem; /* Slightly smaller font size for better fit */
+            width: 100%; /* Ensures the link takes the full width of the grid cell */
+            box-sizing: border-box; /* Includes padding and border in the element's total width and height */
+            border-radius: 4px; /* Maintains rounded corners */
+            text-align: center; /* Centers the text within the link */
+            background-color: #f8f9fa;
+            color: #007bff;
+            text-decoration: none;
+            border: 1px solid #007bff;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .question-map .question-link:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        /* Add Correct and Incorrect Classes for Highlighting */
+        .question-map .question-link.correct {
+            background-color: #28a745; /* Green background */
+            color: #fff; /* White text */
+            border-color: #28a745; /* Green border */
+        }
+
+        .question-map .question-link.incorrect {
+            background-color: #dc3545; /* Red background */
+            color: #fff; /* White text */
+            border-color: #dc3545; /* Red border */
+        }
+
+        /* Add Attempted Class for Highlighting */
+        .question-map .question-link.attempted {
+            background-color: #17a2b8; /* Blue background for attempted questions */
+            color: #fff; /* White text */
+            border-color: #17a2b8; /* Blue border */
+        }
+
+        /* Submit Button and Score Styling */
+        .question-map .submit-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .question-map .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .question-map .submit-btn:hover {
+            background-color: #218838;
+        }
+
+        .question-map .submit-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .question-map .result {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #17a2b8;
+        }
+
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Quiz Container Styling */
+        .quiz-container {
+            background-color: #fff;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+            margin-right: 200px; /* Accommodates the question map sidebar on the right */
+            margin-top: 50px;     /* Maintains spacing from the top */
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #007bff;
+        }
+
+        .question {
+            margin-bottom: 25px;
+        }
+
+        .question p {
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .options label {
+            display: block;
+            margin-bottom: 8px;
+            padding: 10px 15px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .options input[type="radio"] {
+            display: none;
+        }
+
+        .options input[type="radio"]:checked + label {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .options label:hover {
+            background-color: #e6f0ff;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+
+        .submit-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 30px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-align: center;
+            color: #17a2b8;
+        }
+
+        /* Feedback Message Styling */
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .feedback.right {
+            color: #28a745; /* Green for correct answers */
+        }
+
+        .feedback.wrong {
+            color: #dc3545; /* Red for incorrect answers */
+        }
+
+        .feedback.not-attempted {
+            color: #6c757d; /* Gray for not attempted */
+        }
+
+        /* Alert when time is low */
+        .alert {
+            animation: blink 1s steps(5, start) infinite;
+        }
+
+        @keyframes blink {
+            to {
+                visibility: hidden;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .quiz-container {
+                margin-right: 0; /* Removes right margin on small screens */
+            }
+
+            .question-map {
+                display: none; /* Hides the question map on small screens */
+            }
+
+            .toggle-question-map {
+                display: block; /* Shows toggle button on small screens */
+            }
+        }
+
+        /* Toggle Button for Question Map (Visible on Small Screens) */
+        .toggle-question-map {
+            position: fixed;
+            top: 20px;
+            right: 20px; /* Positioned on the right */
+            z-index: 1001;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: none; /* Hidden by default */
+        }
+
+        /* Active State for Question Map on Small Screens */
+        .question-map.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Timer Display -->
+    <div class="timer" id="timer">10:00</div>
+
+    <!-- Toggle Button for Question Map (Visible on Small Screens) -->
+    <button class="toggle-question-map" id="toggleQuestionMap">☰</button>
+
+    <!-- Question Map Sidebar -->
+    <div class="question-map" id="questionMap">
+        <h2>Question Map</h2>
+        <div id="questionLinks">
+            <!-- Question links will be injected here by JavaScript -->
+        </div>
+        <!-- Submit Button and Score Display Below the Question Links -->
+        <div class="submit-section">
+            <button type="button" class="submit-btn" id="submitBtn" onclick="checkAnswers()">Submit</button>
+            <div id="result" class="result"></div>
+        </div>
+    </div>
+
+    <div class="quiz-container">
+        <h1>Khilji Dynasty MCQ Quiz</h1>
+        
+        <form id="quizForm">
+            <!-- Questions will be injected here by JavaScript -->
+        </form>
+
+        <!-- Submit Button and Score Display Below the Questions List -->
+        <div class="submit-section">
+            <button type="button" class="submit-btn" id="submitBtnBelow" onclick="checkAnswers()">Submit</button>
+            <div id="resultBelow" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Declare shuffledQuestions globally
+        let shuffledQuestions = [];
+
+        // Replace the following array with your own questions
+        const questions = [
+    // 1. Founding and Establishment
+    {
+        id: 'q1',
+        question: 'Who founded the Sayyid Dynasty of the Delhi Sultanate?',
+        options: [
+            { text: 'Timur Lang', isCorrect: false },
+            { text: 'Nasiruddin Mahmud Tughlaq', isCorrect: false },
+            { text: 'Khizr Khan', isCorrect: true },
+            { text: 'Bahlol Lodi', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q2',
+        question: 'The Sayyid Dynasty was established by a general of which ruler?',
+        options: [
+            { text: 'Alauddin Khilji', isCorrect: false },
+            { text: 'Timur Lang', isCorrect: true },
+            { text: 'Firoz Shah Tughlaq', isCorrect: false },
+            { text: 'Mahmud Khilji', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q3',
+        question: 'Khizr Khan was appointed as the ruler of which regions by Timur Lang?',
+        options: [
+            { text: 'Delhi and Agra', isCorrect: false },
+            { text: 'Multan, Lahore, and Dipalpur', isCorrect: true },
+            { text: 'Badayun and Mubarakabad', isCorrect: false },
+            { text: 'Samarkand and Kabul', isCorrect: false }
+        ]
+    },
+    // 2. Duration and Position in Delhi Sultanate
+    {
+        id: 'q4',
+        question: 'The Sayyid Dynasty was which number dynasty in the succession of Delhi Sultanate dynasties?',
+        options: [
+            { text: 'Second', isCorrect: false },
+            { text: 'Third', isCorrect: false },
+            { text: 'Fourth', isCorrect: true },
+            { text: 'Fifth', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q5',
+        question: 'During which years did the Sayyid Dynasty rule the Delhi Sultanate?',
+        options: [
+            { text: '1398–1421 AD', isCorrect: false },
+            { text: '1414–1451 AD', isCorrect: true },
+            { text: '1421–1476 AD', isCorrect: false },
+            { text: '1451–1500 AD', isCorrect: false }
+        ]
+    },
+    // 3. Titles and Coinage
+    {
+        id: 'q6',
+        question: 'What title did Khizr Khan prefer over "Sultan"?',
+        options: [
+            { text: 'Shah-e-Hind', isCorrect: false },
+            { text: 'Raiyyat-e-Ala', isCorrect: true },
+            { text: 'Malik-ul-Sharq', isCorrect: false },
+            { text: 'Amir-ul-Mu\'minin', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q7',
+        question: 'Which historian noted that Khizr Khan retained the names of Tughlaq rulers on his coins?',
+        options: [
+            { text: 'Yahiya bin Ahmad Sirhindi', isCorrect: false },
+            { text: 'Farista', isCorrect: true },
+            { text: 'Ziyauddin Barani', isCorrect: false },
+            { text: 'Ibn Battuta', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q8',
+        question: 'Raiyyat-e-Ala was a title used by which ruler of the Sayyid Dynasty?',
+        options: [
+            { text: 'Mubarak Shah', isCorrect: false },
+            { text: 'Muhammad Shah', isCorrect: false },
+            { text: 'Khizr Khan', isCorrect: true },
+            { text: 'Alauddin Alam Shah', isCorrect: false }
+        ]
+    },
+    // 4. Succession and Rulers
+    {
+        id: 'q9',
+        question: 'Who succeeded Khizr Khan after his death in May 1421 AD?',
+        options: [
+            { text: 'Muhammad Shah', isCorrect: false },
+            { text: 'Mubarak Shah', isCorrect: true },
+            { text: 'Alauddin Alam Shah', isCorrect: false },
+            { text: 'Bahlol Lodi', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q10',
+        question: 'Mubarak Shah assumed which title upon ascending the throne?',
+        options: [
+            { text: 'Sultan', isCorrect: false },
+            { text: 'Amir', isCorrect: false },
+            { text: 'Shah', isCorrect: true },
+            { text: 'Emir', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q11',
+        question: 'After Mubarak Shah\'s death in February 1434 AD, who took over the throne?',
+        options: [
+            { text: 'His son, Alauddin Alam Shah', isCorrect: false },
+            { text: 'His brother, Farista Khan', isCorrect: false },
+            { text: 'His adopted son, Muhammad Shah', isCorrect: true },
+            { text: 'Bahlol Lodi', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q12',
+        question: 'Alauddin Alam Shah was related to Muhammad Shah in what way?',
+        options: [
+            { text: 'Brother', isCorrect: false },
+            { text: 'Son', isCorrect: true },
+            { text: 'Cousin', isCorrect: false },
+            { text: 'Uncle', isCorrect: false }
+        ]
+    },
+    // 5. Contributions and Events
+    {
+        id: 'q13',
+        question: 'Which ruler established the city of Mubarakabad in 1434 AD?',
+        options: [
+            { text: 'Khizr Khan', isCorrect: false },
+            { text: 'Mubarak Shah', isCorrect: true },
+            { text: 'Muhammad Shah', isCorrect: false },
+            { text: 'Alauddin Alam Shah', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q14',
+        question: 'Tarikh-e-Mubarak Shahi is a historical account related to which ruler?',
+        options: [
+            { text: 'Khizr Khan', isCorrect: false },
+            { text: 'Mubarak Shah', isCorrect: true },
+            { text: 'Muhammad Shah', isCorrect: false },
+            { text: 'Alauddin Alam Shah', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q15',
+        question: 'Yahiya bin Ahmad Sirhindi was a patron of which Sayyid ruler?',
+        options: [
+            { text: 'Khizr Khan', isCorrect: false },
+            { text: 'Mubarak Shah', isCorrect: true },
+            { text: 'Muhammad Shah', isCorrect: false },
+            { text: 'Alauddin Alam Shah', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q16',
+        question: 'In which year did Mahmud Khilji attack Muhammad Shah?',
+        options: [
+            { text: '1434 AD', isCorrect: false },
+            { text: '1440 AD', isCorrect: true },
+            { text: '1445 AD', isCorrect: false },
+            { text: '1451 AD', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q17',
+        question: 'What was the outcome of Mahmud Khilji\'s invasion of Muhammad Shah in 1440 AD?',
+        options: [
+            { text: 'Muhammad Shah was overthrown', isCorrect: false },
+            { text: 'Mahmud Khilji established his own rule', isCorrect: false },
+            { text: 'A treaty was made after the war', isCorrect: true },
+            { text: 'Delhi was captured permanently by Mahmud Khilji', isCorrect: false }
+        ]
+    },
+    // 6. Decline and End of the Dynasty
+    {
+        id: 'q18',
+        question: 'Who was the last Sultan of the Sayyid Dynasty?',
+        options: [
+            { text: 'Khizr Khan', isCorrect: false },
+            { text: 'Mubarak Shah', isCorrect: false },
+            { text: 'Muhammad Shah', isCorrect: false },
+            { text: 'Alauddin Alam Shah', isCorrect: true }
+        ]
+    },
+    {
+        id: 'q19',
+        question: 'In which year did Alauddin Alam Shah hand over the throne of Delhi to Bahlol Lodi?',
+        options: [
+            { text: '1445 AD', isCorrect: false },
+            { text: '1451 AD', isCorrect: true },
+            { text: '1457 AD', isCorrect: false },
+            { text: '1476 AD', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q20',
+        question: 'Handing over the throne to Bahlol Lodi marked the beginning of which dynasty?',
+        options: [
+            { text: 'Khilji Dynasty', isCorrect: false },
+            { text: 'Tughlaq Dynasty', isCorrect: false },
+            { text: 'Lodi Dynasty', isCorrect: true },
+            { text: 'Mughal Dynasty', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q21',
+        question: 'After relinquishing the throne, to which city did Alauddin Alam Shah move in 1457 AD?',
+        options: [
+            { text: 'Delhi', isCorrect: false },
+            { text: 'Multan', isCorrect: false },
+            { text: 'Badayun', isCorrect: true },
+            { text: 'Lahore', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q22',
+        question: 'When did Alauddin Alam Shah, the last ruler of the Sayyid Dynasty, die?',
+        options: [
+            { text: '1451 AD', isCorrect: false },
+            { text: '1457 AD', isCorrect: false },
+            { text: '1476 AD', isCorrect: true },
+            { text: '1434 AD', isCorrect: false }
+        ]
+    },
+    // 7. Additional Facts
+    {
+        id: 'q23',
+        question: 'The Sayyid Dynasty was founded after which invasion in India?',
+        options: [
+            { text: '1398 invasion during Nasiruddin Mahmud Tughlaq\'s reign', isCorrect: true },
+            { text: '1414 invasion by Timur Lang', isCorrect: false },
+            { text: '1440 invasion by Mahmud Khilji', isCorrect: false },
+            { text: '1451 invasion by Bahlol Lodi', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q24',
+        question: 'Which of the following titles was not used by Khizr Khan?',
+        options: [
+            { text: 'Raiyyat-e-Ala', isCorrect: false },
+            { text: 'Sultan', isCorrect: true },
+            { text: 'Governor of Multan', isCorrect: false },
+            { text: 'General of Timur Lang', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q25',
+        question: 'Khizr Khan allowed the names of which dynasty\'s rulers to remain on the coins during his reign?',
+        options: [
+            { text: 'Lodi Dynasty', isCorrect: false },
+            { text: 'Tughlaq Dynasty', isCorrect: true },
+            { text: 'Khilji Dynasty', isCorrect: false },
+            { text: 'Mughal Dynasty', isCorrect: false }
+        ]
+    },
+    // 8. Reversed Format Questions
+    {
+        id: 'q26',
+        question: 'Raiyyat-e-Ala was the title preferred by which founder of the Sayyid Dynasty?',
+        options: [
+            { text: 'Muhammad Shah', isCorrect: false },
+            { text: 'Mubarak Shah', isCorrect: false },
+            { text: 'Khizr Khan', isCorrect: true },
+            { text: 'Alauddin Alam Shah', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q27',
+        question: 'The historical text Tarikh-e-Mubarak Shahi provides information about which dynasty?',
+        options: [
+            { text: 'Tughlaq Dynasty', isCorrect: false },
+            { text: 'Khilji Dynasty', isCorrect: false },
+            { text: 'Sayyid Dynasty', isCorrect: true },
+            { text: 'Lodi Dynasty', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q28',
+        question: 'Badayun became the favored place of which Sayyid ruler after he left Delhi?',
+        options: [
+            { text: 'Khizr Khan', isCorrect: false },
+            { text: 'Mubarak Shah', isCorrect: false },
+            { text: 'Muhammad Shah', isCorrect: false },
+            { text: 'Alauddin Alam Shah', isCorrect: true }
+        ]
+    },
+    // 9. More Questions for Test: MCQ Set on Sayyid Dynasty
+    // 1. Founding and Establishment
+    {
+        id: 'q29',
+        question: 'Who founded the Sayyid Dynasty?',
+        options: [
+            { text: 'Timur Lang', isCorrect: false },
+            { text: 'Nasiruddin Tughlaq', isCorrect: false },
+            { text: 'Khizr Khan', isCorrect: true },
+            { text: 'Bahlol Lodi', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q30',
+        question: 'Khizr Khan was a general of?',
+        options: [
+            { text: 'Alauddin Khilji', isCorrect: false },
+            { text: 'Timur Lang', isCorrect: true },
+            { text: 'Mahmud Khilji', isCorrect: false },
+            { text: 'Firoz Shah', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q31',
+        question: 'Sayyid Dynasty ruled Delhi Sultanate as?',
+        options: [
+            { text: 'First Dynasty', isCorrect: false },
+            { text: 'Second Dynasty', isCorrect: false },
+            { text: 'Third Dynasty', isCorrect: false },
+            { text: 'Fourth Dynasty', isCorrect: true }
+        ]
+    },
+    {
+        id: 'q32',
+        question: 'Duration of Sayyid Dynasty?',
+        options: [
+            { text: '1398–1421 AD', isCorrect: false },
+            { text: '1414–1451 AD', isCorrect: true },
+            { text: '1421–1476 AD', isCorrect: false },
+            { text: '1451–1500 AD', isCorrect: false }
+        ]
+    },
+    // 2. Rulers of the Sayyid Dynasty
+    {
+        id: 'q33',
+        question: 'Khizr Khan\'s title?',
+        options: [
+            { text: 'Sultan', isCorrect: false },
+            { text: 'Shah', isCorrect: false },
+            { text: 'Raiyyat-e-Ala', isCorrect: true },
+            { text: 'Emir', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q34',
+        question: 'Successor of Khizr Khan?',
+        options: [
+            { text: 'Muhammad Shah', isCorrect: false },
+            { text: 'Mubarak Shah', isCorrect: true },
+            { text: 'Alauddin Alam', isCorrect: false },
+            { text: 'Bahlol Lodi', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q35',
+        question: 'Mubarak Shah established which city?',
+        options: [
+            { text: 'Delhi', isCorrect: false },
+            { text: 'Lahore', isCorrect: false },
+            { text: 'Mubarakabad', isCorrect: true },
+            { text: 'Badayun', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q36',
+        question: 'Title taken by Mubarak Shah?',
+        options: [
+            { text: 'Sultan', isCorrect: false },
+            { text: 'Shah', isCorrect: true },
+            { text: 'Emir', isCorrect: false },
+            { text: 'Raiyyat-e-Ala', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q37',
+        question: 'Muhammad Shah faced invasion in?',
+        options: [
+            { text: '1434 AD', isCorrect: false },
+            { text: '1440 AD', isCorrect: true },
+            { text: '1445 AD', isCorrect: false },
+            { text: '1451 AD', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q38',
+        question: 'Last ruler of Sayyid Dynasty?',
+        options: [
+            { text: 'Khizr Khan', isCorrect: false },
+            { text: 'Mubarak Shah', isCorrect: false },
+            { text: 'Muhammad Shah', isCorrect: false },
+            { text: 'Alauddin Alam Shah', isCorrect: true }
+        ]
+    },
+    // 3. Titles and Coinage
+    {
+        id: 'q39',
+        question: 'Khizr Khan did NOT assume?',
+        options: [
+            { text: 'Shah', isCorrect: false },
+            { text: 'Sultan', isCorrect: true },
+            { text: 'Emir', isCorrect: false },
+            { text: 'Raiyyat-e-Ala', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q40',
+        question: 'Coins retained names of?',
+        options: [
+            { text: 'Lodi rulers', isCorrect: false },
+            { text: 'Tughlaq rulers', isCorrect: true },
+            { text: 'Khilji rulers', isCorrect: false },
+            { text: 'Mughal rulers', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q41',
+        question: 'Historian who noted coinage?',
+        options: [
+            { text: 'Yahiya Sirhindi', isCorrect: false },
+            { text: 'Farista', isCorrect: true },
+            { text: 'Ziauddin Barani', isCorrect: false },
+            { text: 'Ibn Battuta', isCorrect: false }
+        ]
+    },
+    // 4. Succession and Governance
+    {
+        id: 'q42',
+        question: 'Muhammad Shah was?',
+        options: [
+            { text: 'Son of Mubarak', isCorrect: false },
+            { text: 'Brother of Mubarak', isCorrect: false },
+            { text: 'Adopted son', isCorrect: true },
+            { text: 'Cousin of Mubarak', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q43',
+        question: 'Alauddin Alam Shah handed throne to?',
+        options: [
+            { text: 'Timur Lang', isCorrect: false },
+            { text: 'Bahlol Lodi', isCorrect: true },
+            { text: 'Mahmud Khilji', isCorrect: false },
+            { text: 'Firoz Shah', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q44',
+        question: 'Mubarak Shah died in?',
+        options: [
+            { text: '1421 AD', isCorrect: false },
+            { text: '1434 AD', isCorrect: true },
+            { text: '1445 AD', isCorrect: false },
+            { text: '1451 AD', isCorrect: false }
+        ]
+    },
+    // 5. Contributions and Events
+    {
+        id: 'q45',
+        question: 'Tarikh-e-Mubarak Shahi written by?',
+        options: [
+            { text: 'Farista', isCorrect: false },
+            { text: 'Yahiya Sirhindi', isCorrect: true },
+            { text: 'Khizr Khan', isCorrect: false },
+            { text: 'Mubarak Shah', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q46',
+        question: 'Muhammad Shah died in?',
+        options: [
+            { text: '1434 AD', isCorrect: false },
+            { text: '1440 AD', isCorrect: false },
+            { text: '1445 AD', isCorrect: true },
+            { text: '1451 AD', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q47',
+        question: 'Alauddin Alam Shah moved to?',
+        options: [
+            { text: 'Delhi', isCorrect: false },
+            { text: 'Lahore', isCorrect: false },
+            { text: 'Badayun', isCorrect: true },
+            { text: 'Mubarakabad', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q48',
+        question: 'Mahmud Khilji invaded in?',
+        options: [
+            { text: '1434 AD', isCorrect: false },
+            { text: '1440 AD', isCorrect: true },
+            { text: '1445 AD', isCorrect: false },
+            { text: '1451 AD', isCorrect: false }
+        ]
+    },
+    // 6. Decline and End of Dynasty
+    {
+        id: 'q49',
+        question: 'Dynasty ended in?',
+        options: [
+            { text: '1421 AD', isCorrect: false },
+            { text: '1434 AD', isCorrect: false },
+            { text: '1451 AD', isCorrect: true },
+            { text: '1476 AD', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q50',
+        question: 'Alauddin Alam Shah died in?',
+        options: [
+            { text: '1451 AD', isCorrect: false },
+            { text: '1457 AD', isCorrect: false },
+            { text: '1476 AD', isCorrect: true },
+            { text: '1434 AD', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q51',
+        question: 'Lodi Dynasty began in?',
+        options: [
+            { text: '1414 AD', isCorrect: false },
+            { text: '1421 AD', isCorrect: false },
+            { text: '1451 AD', isCorrect: true },
+            { text: '1476 AD', isCorrect: false }
+        ]
+    },
+    // 7. Key Points
+    {
+        id: 'q52',
+        question: 'Khizr Khan was governor of?',
+        options: [
+            { text: 'Delhi', isCorrect: false },
+            { text: 'Multan, Lahore', isCorrect: true },
+            { text: 'Badayun', isCorrect: false },
+            { text: 'Mubarakabad', isCorrect: false }
+        ]
+    },
+    {
+        id: 'q53',
+        question: 'Sayyid Dynasty was?',
+        options: [
+            { text: 'First Dynasty', isCorrect: false },
+            { text: 'Second Dynasty', isCorrect: false },
+            { text: 'Third Dynasty', isCorrect: false },
+            { text: 'Fourth Dynasty', isCorrect: true }
+        ]
+    }
+];
+
+
+        // Function to shuffle an array using Fisher-Yates algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Function to render the questions dynamically
+        function renderQuestions() {
+            const quizForm = document.getElementById('quizForm');
+            const questionsArray = getQuestions(); // Retrieve the questions array
+            if (!questionsArray || !Array.isArray(questionsArray) || questionsArray.length < 25) {
+                quizForm.innerHTML = '<p>Insufficient questions available. Please ensure there are at least 25 questions in the questions array.</p>';
+                return;
+            }
+
+            // Randomly select 25 questions from the available questions
+            const selectedQuestions = getRandomQuestions(questionsArray, 25);
+
+            // Assign shuffledQuestions to the global variable
+            shuffledQuestions = shuffleArray([...selectedQuestions]); // Create a copy and shuffle
+
+            shuffledQuestions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('question');
+                questionDiv.id = `question-${index + 1}`; // Assign unique ID
+
+                // Question text
+                const questionText = document.createElement('p');
+                questionText.textContent = `${index + 1}. ${q.question}`;
+                questionDiv.appendChild(questionText);
+
+                // Options
+                const optionsDiv = document.createElement('div');
+                optionsDiv.classList.add('options');
+
+                // Shuffle options and assign back to q.options
+                q.options = shuffleArray([...q.options]);
+                const shuffledOptions = q.options;
+
+                // Assign labels A, B, C, D dynamically
+                const labels = ['A', 'B', 'C', 'D'];
+
+                shuffledOptions.forEach((option, optIndex) => {
+                    const optionId = `${q.id}_option${optIndex + 1}`; // Unique ID for each option
+
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.id = optionId;
+                    radioInput.name = q.id;
+                    radioInput.value = labels[optIndex]; // Assign label as value
+
+                    const label = document.createElement('label');
+                    label.htmlFor = optionId;
+                    label.textContent = `${labels[optIndex]}) ${option.text}`;
+
+                    optionsDiv.appendChild(radioInput);
+                    optionsDiv.appendChild(label);
+
+                    // Add Attempted Class when an option is selected
+                    radioInput.addEventListener('change', function() {
+                        const questionMapLink = document.querySelector(`.question-map .question-link[href="#question-${index + 1}"]`);
+                        if (questionMapLink && !questionMapLink.classList.contains('correct') && !questionMapLink.classList.contains('incorrect')) {
+                            questionMapLink.classList.add('attempted');
+                        }
+                    });
+                });
+
+                questionDiv.appendChild(optionsDiv);
+
+                // Add Feedback Div Below Options
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.classList.add('feedback');
+                feedbackDiv.id = `feedback-${index + 1}`; // Unique ID for each feedback div
+                questionDiv.appendChild(feedbackDiv);
+
+                quizForm.appendChild(questionDiv);
+            });
+
+            generateQuestionMap(shuffledQuestions.length);
+        }
+
+        // Function to retrieve the questions array
+        function getQuestions() {
+            // Replace this with your actual questions array
+            return questions; // Assuming 'questions' is defined globally
+        }
+
+        // Function to randomly select n questions from the questions array
+        function getRandomQuestions(questionsArray, n) {
+            const shuffled = shuffleArray([...questionsArray]);
+            return shuffled.slice(0, n);
+        }
+
+        // Function to generate the Question Map links
+        function generateQuestionMap(totalQuestions) {
+            const questionLinksDiv = document.getElementById('questionLinks');
+            questionLinksDiv.innerHTML = ''; // Clear any existing links
+
+            for (let i = 1; i <= totalQuestions; i++) {
+                const link = document.createElement('a');
+                link.href = `#question-${i}`;
+                link.classList.add('question-link');
+                link.textContent = `Q${i}`;
+
+                questionLinksDiv.appendChild(link);
+            }
+        }
+
+        // Timer Functionality
+        function startTimer(duration, display) {
+            let timer = duration, minutes, seconds;
+            const countdown = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                // Add alert class when time is less than 1 minute
+                if (timer <= 60 && timer > 0) { // 60 seconds = 1 minute
+                    display.classList.add('alert');
+                }
+
+                if (--timer < 0) {
+                    clearInterval(countdown);
+                    autoSubmit();
+                }
+            }, 1000);
+        }
+
+        // Function to automatically submit the quiz when time is up
+        function autoSubmit() {
+            alert("Time's up! The quiz will now be submitted.");
+            checkAnswers();
+        }
+
+        // Initialize the quiz on page load
+        window.onload = function () {
+            renderQuestions(); // Render questions on page load
+            const tenMinutes = 60 * 10, // 10 minutes in seconds
+                  display = document.getElementById('timer');
+            startTimer(tenMinutes, display);
+        };
+
+        // Function to check answers and display the result
+        function checkAnswers() {
+            let score = 0;
+            let totalQuestions = shuffledQuestions.length; // Total number of questions
+
+            shuffledQuestions.forEach((q, index) => { // Iterate over each question
+                const selectedOption = document.querySelector(`input[name="${q.id}"]:checked`);
+                const feedbackDiv = document.getElementById(`feedback-${index + 1}`);
+                
+                if (selectedOption) {
+                    // Get the selected label (A, B, C, D)
+                    const selectedLabel = selectedOption.value;
+                    // Map label to option index
+                    const labelIndex = ['A', 'B', 'C', 'D'].indexOf(selectedLabel);
+                    if (labelIndex !== -1 && q.options[labelIndex].isCorrect) {
+                        score += 1; // Add 1 mark for correct answer
+
+                        // Mark the question link as correct in the Question Map
+                        const questionMapLink = document.querySelector(`.question-map .question-link[href="#question-${index + 1}"]`);
+                        if (questionMapLink) {
+                            questionMapLink.classList.add('correct');
+                            questionMapLink.classList.remove('incorrect', 'attempted');
+                        }
+
+                        // Update Feedback Below the Question
+                        if (feedbackDiv) {
+                            feedbackDiv.textContent = 'Right';
+                            feedbackDiv.classList.add('right');
+                            feedbackDiv.classList.remove('wrong', 'not-attempted');
+                        }
+                    } else {
+                        score -= 0.5; // Deduct 0.5 marks for incorrect answer
+
+                        // Mark the question link as incorrect in the Question Map
+                        const questionMapLink = document.querySelector(`.question-map .question-link[href="#question-${index + 1}"]`);
+                        if (questionMapLink) {
+                            questionMapLink.classList.add('incorrect');
+                            questionMapLink.classList.remove('correct', 'attempted');
+                        }
+
+                        // Update Feedback Below the Question
+                        if (feedbackDiv) {
+                            feedbackDiv.textContent = 'Wrong';
+                            feedbackDiv.classList.add('wrong');
+                            feedbackDiv.classList.remove('right', 'not-attempted');
+                        }
+                    }
+                } else {
+                    // If the question was not answered, mark as not attempted
+                    const questionMapLink = document.querySelector(`.question-map .question-link[href="#question-${index + 1}"]`);
+                    if (questionMapLink) {
+                        // Remove both classes if the question was not answered
+                        questionMapLink.classList.remove('correct', 'incorrect', 'attempted');
+                    }
+
+                    // Update Feedback Below the Question
+                    if (feedbackDiv) {
+                        feedbackDiv.textContent = 'Not Attempted';
+                        feedbackDiv.classList.add('not-attempted');
+                        feedbackDiv.classList.remove('right', 'wrong');
+                    }
+                }
+            });
+
+            // Round the score to one decimal place
+            score = Math.round(score * 10) / 10;
+
+            // Update the result in the Question Map Sidebar
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = `You scored ${score} out of ${totalQuestions}`;
+
+            // Update the result below the questions list
+            const resultDivBelow = document.getElementById('resultBelow');
+            resultDivBelow.textContent = `You scored ${score} out of ${totalQuestions}`;
+
+            // Disable all inputs to prevent changes after submission
+            const inputs = document.querySelectorAll('input[type="radio"]');
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
+
+            // Disable the submit buttons to prevent multiple submissions
+            const submitButton = document.getElementById('submitBtn');
+            submitButton.disabled = true;
+
+            const submitButtonBelow = document.getElementById('submitBtnBelow');
+            if (submitButtonBelow) {
+                submitButtonBelow.disabled = true;
+            }
+        }
+
+        // Toggle Question Map on small screens
+        const toggleBtn = document.getElementById('toggleQuestionMap');
+        const questionMap = document.getElementById('questionMap');
+
+        toggleBtn.addEventListener('click', () => {
+            questionMap.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
